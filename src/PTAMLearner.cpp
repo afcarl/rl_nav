@@ -9,10 +9,11 @@ using namespace std;
 
 pthread_mutex_t PTAMLearner::gazeboModelState_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t PTAMLearner::pointCloud_mutex = PTHREAD_MUTEX_INITIALIZER;
-
+pthread_mutex_t PTAMLearner::pixelCloud_mutex = PTHREAD_MUTEX_INITIALIZER;
 PTAMLearner::PTAMLearner()
 {
 	pointCloud_sub = nh.subscribe("/vslam/frame_points", 100, &PTAMLearner::pointCloudCb, this);
+	pixelCloud_sub = nh.subscribe("/vslam/frame_pixel", 100, &PTAMLearner::pixelCloudCb, this);
 	gazeboModelStates_sub = nh.subscribe("/gazebo/model_states", 100, &PTAMLearner::gazeboModelStatesCb, this);
 	srand (time(NULL));
 	lastBestQStateAction = nullTuple;
@@ -30,6 +31,13 @@ void PTAMLearner::pointCloudCb(const pcl::PointCloud<pcl::PointXYZ>::Ptr pointCl
 	pthread_mutex_lock(&pointCloud_mutex);
 	currentPointCloud = *pointCloudPtr;
 	pthread_mutex_unlock(&pointCloud_mutex);
+}
+
+void PTAMLearner::pixelCloudCb(const pcl::PointCloud<pcl::PointXYZ>::Ptr pixelCloudPtr)	
+{
+	pthread_mutex_lock(&pixelCloud_mutex);
+	currentPixelCloud = *pixelCloudPtr;
+	pthread_mutex_unlock(&pixelCloud_mutex);
 }
 
 void PTAMLearner::getActions()
@@ -161,7 +169,6 @@ CommandStateActionQ PTAMLearner::getThresholdedClosestAngleStateAction(float qTh
 		return getBestQStateAction(lastCommand);
 	else
 	{
-		cout<<"THRESHOLDED SIZE "<<potentialInputs.size()<<endl;
 		CommandStateActionQ result = potentialInputs[rand()%potentialInputs.size()];
 		float currentAngle = Helper::getPoseOrientation(robotWorldPose.orientation)[2], min_diff = numeric_limits<float>::infinity(), angle_diff;
 		

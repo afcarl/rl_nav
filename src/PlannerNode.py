@@ -19,18 +19,19 @@ class PLanner2D(object):
 	def __init__(self):
 
 		self.state = 0
-
+		self.delay = 10
 		self.vel_pub = rospy.Publisher('/cmd_vel_mux/input/teleop',Twist,queue_size=100)
+		#self.vel_pub = rospy.Publisher('/cmd_vel',Twist,queue_size=100)
 		self.status_pub = rospy.Publisher('/planner/status',String,queue_size=100)
 		self.inp_pub = rospy.Publisher('/planner/global/path', Float32MultiArray,queue_size=100)
 		self.safe_path_pub = rospy.Publisher("/rl/safe_action", Marker, queue_size=1);
 		self.unsafe_path_pub = rospy.Publisher("/rl/unsafe_action", Marker, queue_size=1);
 		self.global_path_pub = rospy.Publisher("/planner/global_path", Marker, queue_size=1);
 		self.lookahead_path_pub = rospy.Publisher("/planner/lookahead_path", Marker, queue_size=1);
-		self.pose_pub = rospy.Publisher('/move_base_simple/waypoint',PoseStamped,queue_size=100)
+		self.waypoint_pub = rospy.Publisher('/move_base_simple/waypoint',PoseStamped,queue_size=100)
 
 		self.pathSRV = rospy.Service('/planner/global/expected_path', ExpectedPath, self.sendLookahead)
-
+		self.VEL_SCALE = 1.2	
 		self.map = rospy.get_param('~map',-1)
 		if(self.map==1):
 			self.points = [4.0,7.0,0.0,14.0]
@@ -40,7 +41,7 @@ class PLanner2D(object):
 			self.goal = [7.0,6.5,0.0,28.0] #map 2
 		elif(self.map==3):
 			self.points = [4.0,4.0,tan(pi/4.0),14.0]
-			self.goal = [7.0,7.0,0.0,28.0] #map 3
+			self.goal = [6.0,6.0,-tan(pi/4.0),28.0] #map 3
 		else:
 			self.goal = []
 			self.points = []
@@ -186,7 +187,7 @@ class PLanner2D(object):
 		ps = PoseStamped()
 		ps.header = waypointPose.header
 		ps.pose = waypointPose.pose.pose
-		self.pose_pub.publish(ps)
+		self.waypoint_pub.publish(ps)
 		if self.state==0:
 			waypointPose = waypointPose.pose
 			self.points = [waypointPose.pose.position.x, waypointPose.pose.position.y, 
@@ -200,6 +201,8 @@ class PLanner2D(object):
 		self.robotState = modelStates.pose[-1]
 
 	def receiveInput(self, inputArray):
+		if self.state==1:
+			return 0
 		inp = inputArray.data
 		
 		status = String()
@@ -214,16 +217,16 @@ class PLanner2D(object):
 		self.status_pub.publish(status)
 		start_time = datetime.datetime.now()
 		t=to
-		r = rospy.Rate(10)
+		r = rospy.Rate(self.delay)
 		cmd = Twist()
 		while t<tf and self.state==1:
 		
 			dx,dy,dk = getVel(coeffs,to,tf,t)
-			cmd.linear.x = inp[-3]*sqrt(dx**2 + dy**2)
-			cmd.angular.z = inp[-3]*dk
+			cmd.linear.x = self.VEL_SCALE*inp[-3]*sqrt(dx**2 + dy**2)
+			cmd.angular.z = self.VEL_SCALE*inp[-3]*dk
 			self.vel_pub.publish(cmd)
 			r.sleep()
-			t = t + 0.1
+			t = t + 1.0/self.delay
 			self.status_pub.publish(status)
 		time.sleep(0.3)
 		self.vel_pub.publish(Twist())
@@ -233,8 +236,6 @@ class PLanner2D(object):
 		rospy.Rate(1).sleep()
 		self.status_pub.publish(status)
 
-	#def commandRobot(self,event):
-
 	def getQuadrant(self,angle):
 		if 0<=angle<pi/2.0:
 			return 1
@@ -242,14 +243,20 @@ class PLanner2D(object):
 			return 1
 
 	def receiveInputGlobal(self, empty):
-		pose = [self.robotPTAMPose.position.x, self.robotPTAMPose.position.y, 
-				tan(euler_from_quaternion([ self.robotPTAMPose.orientation.x,
-										self.robotPTAMPose.orientation.y,
-										self.robotPTAMPose.orientation.z,
-										self.robotPTAMPose.orientation.w])[2]),0]
+		# pose = [self.robotPTAMPose.position.x, self.robotPTAMPose.position.y, 
+		# 		tan(euler_from_quaternion([ self.robotPTAMPose.orientation.x,
+		# 								self.robotPTAMPose.orientation.y,
+		# 								self.robotPTAMPose.orientation.z,
+		# 								self.robotPTAMPose.orientation.w])[2]),0]
 
-		distance = linalg.norm(array([self.robotPTAMPose.position.x, self.robotPTAMPose.position.y]) 
-							  - array([self.points[0], self.points[1]]))
+		pose = [self.robotState.position.x, self.robotState.position.y, 
+				tan(euler_from_quaternion([ self.robotState.orientation.x,
+										self.robotState.orientation.y,
+										self.robotState.orientation.z,
+										self.robotState.orientation.w])[2]),0]
+
+		# distance = linalg.norm(array([self.robotPTAMPose.position.x, self.robotPTAMPose.position.y]) 
+		# 					  - array([self.points[0], self.points[1]]))
 		# distance2 = linalg.norm(array([self.goal[0], self.goal[1]]) 
 		# 					  - array([self.points[0], self.points[1]]))
 		# self.points[-1] = 1.2*self.tf*distance1/(distance1+distance2)
@@ -258,7 +265,7 @@ class PLanner2D(object):
 		my_points = self.points[:]
 		print goal 
 		print my_points
-		# if(self.map==1 or self.map==2):
+		# if(self.map==1 or self.map==2 or self.map==3):
 		# 	if pose[0]>=4:
 		# 		points_done = 1
 		# 		goal[-1]=14.0
@@ -282,7 +289,7 @@ class PLanner2D(object):
 		# ps.pose.orientation.x = q[0]
 		# ps.pose.orientation.y = q[1]
 		# ps.pose.orientation.z = q[2]
-		# self.pose_pub.publish(ps)
+		# self.waypoint_pub.publish(ps)
 		# elif self.map==4:
 		# 	if pose[0] < -1.5:
 		# 		goal = goal[0:1]
@@ -316,7 +323,6 @@ class PLanner2D(object):
 		
 		
 		status = String()
-		self.state = 1
 		inp = [pose[0],pose[1],pose[2],
 				goal[0],goal[1],goal[2],
 			   0.0,0.0,0.0,0.0,0.0,0.0]
@@ -327,7 +333,6 @@ class PLanner2D(object):
 		
 		to = self.to
 		tf = goal[-1]
-		print tf
 		# if points[1:-1]==[]:
 		# 	coeffs = get_coeffs(inp,to,tf)
 		# else:
@@ -337,8 +342,8 @@ class PLanner2D(object):
 		t=to
 
 		self.status_pub.publish(status)
-		self.state = 1
-		r = rospy.Rate(10)
+		self.state = 2
+		r = rospy.Rate(self.delay)
 		cmd = Twist()
 		self.GlobalPath.points = []
 		while t<tf:
@@ -348,7 +353,7 @@ class PLanner2D(object):
 			t = t + 0.1
 		t=to
 		self.global_path_pub.publish(self.GlobalPath)
-		while t<tf and self.state==1:
+		while t<tf and self.state==2:
 			self.global_path_pub.publish(self.GlobalPath)
 			dx,dy,dk = getVel(coeffs,to,tf,t)
 			point1,kt1 = getPos(coeffs,to,tf,t,pose[1])
@@ -360,31 +365,39 @@ class PLanner2D(object):
 			
 			#print self.robotPTAMPose.position.x, self.robotPTAMPose.position.y
 			self.status_pub.publish(status)
-			yaw = euler_from_quaternion([ self.robotPTAMPose.orientation.x,
-										self.robotPTAMPose.orientation.y,
-										self.robotPTAMPose.orientation.z,
-										self.robotPTAMPose.orientation.w])[2]
+			yaw = euler_from_quaternion([ self.robotState.orientation.x,
+										self.robotState.orientation.y,
+										self.robotState.orientation.z,
+										self.robotState.orientation.w])[2]
+
+			# yaw = euler_from_quaternion([ self.robotPTAMPose.orientation.x,
+			# 							self.robotPTAMPose.orientation.y,
+			# 							self.robotPTAMPose.orientation.z,
+			# 							self.robotPTAMPose.orientation.w])[2]
 			if fabs(yaw) < pi/2.0:
 				cmd.linear.x = sign(dx) * sqrt(dx**2 + dy**2)
 			elif fabs(yaw) > pi/2.0:
 				cmd.linear.x = -sign(dx) * sqrt(dx**2 + dy**2)
 			else:
 				cmd.linear.x = sign(yaw)*sign(dy) * sqrt(dx**2 + dy**2)
-			cmd.angular.z = dk
+			cmd.angular.z = self.VEL_SCALE*dk
+			cmd.linear.x = self.VEL_SCALE*cmd.linear.x
 			message.data[-1] = sign(cmd.linear.x)
+			# T = 10*t
+			# if(int(T)==T):
 			self.inp_pub.publish(message)
 			lookahead = [ point1.z, point1.x, kt1,
 						  point2.z, point2.x, kt2,
 				   			0.0,0.0,0.0,0.0,0.0,0.0,0.0]
-			traj = array(self.trajjer(lookahead+[0,1,1]))
+			#traj = array(self.trajjer(lookahead+[0,1,1]))
 			# traj = traj.T
 			# traj[0], traj[1] = traj[1], traj[0]
 			# traj = traj.T
-			self.lookaheadPath.points = traj.tolist()
+			#self.lookaheadPath.points = traj.tolist()
 			#self.lookaheadPath.pose = self.robotPTAMPose
 			self.vel_pub.publish(cmd)
 			r.sleep()
-			t = t + 0.1
+			t = t + 1.0/self.delay
 			self.status_pub.publish(status)
 				
 		self.vel_pub.publish(Twist())
@@ -393,13 +406,20 @@ class PLanner2D(object):
 		status.data = "DONE1"
 		rospy.Rate(2).sleep()
 		self.status_pub.publish(status)
+		self.state = 0
 
 	def sendLookahead(self, req):
-		pose = [self.robotPTAMPose.position.x, self.robotPTAMPose.position.y, 
-				tan(euler_from_quaternion([ self.robotPTAMPose.orientation.x,
-										self.robotPTAMPose.orientation.y,
-										self.robotPTAMPose.orientation.z,
-										self.robotPTAMPose.orientation.w])[2]),0]
+		# pose = [self.robotPTAMPose.position.x, self.robotPTAMPose.position.y, 
+		# 		tan(euler_from_quaternion([ self.robotPTAMPose.orientation.x,
+		# 								self.robotPTAMPose.orientation.y,
+		# 								self.robotPTAMPose.orientation.z,
+		# 								self.robotPTAMPose.orientation.w])[2]),0]
+
+		pose = [self.robotState.position.x, self.robotState.position.y, 
+				tan(euler_from_quaternion([ self.robotState.orientation.x,
+										self.robotState.orientation.y,
+										self.robotState.orientation.z,
+										self.robotState.orientation.w])[2]),0]
 
 		# if pose[0]>4:
 		# 	points_done = 1

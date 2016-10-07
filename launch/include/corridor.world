@@ -229,7 +229,7 @@
             <script>
               <uri>model://grey_wall/materials/scripts</uri>
               <uri>model://grey_wall/materials/textures</uri>
-              <name>vrc/grey_wall3</name>
+              <name>vrc/grey_wall_stone</name>
             </script>
           </material>
         </visual>
@@ -275,7 +275,7 @@
             <script>
               <uri>model://grey_wall/materials/scripts</uri>
               <uri>model://grey_wall/materials/textures</uri>
-              <name>vrc/grey_wall1</name>
+              <name>vrc/grey_wall_tile</name>
             </script>
           </material>
         </visual>
@@ -321,7 +321,7 @@
             <script>
               <uri>model://grey_wall/materials/scripts</uri>
               <uri>model://grey_wall/materials/textures</uri>
-              <name>vrc/grey_wall2</name>
+              <name>vrc/grey_wall_square</name>
             </script>
           </material>
         </visual>
@@ -367,7 +367,7 @@
             <script>
               <uri>model://grey_wall/materials/scripts</uri>
               <uri>model://grey_wall/materials/textures</uri>
-              <name>vrc/grey_wall5</name>
+              <name>vrc/grey_wall_triangle</name>
             </script>
           </material>
         </visual>
@@ -382,49 +382,40 @@
       <pose>2 -2 0 0 -0 -1.5708</pose>
     </model>
     <state world_name='default'>
-      <sim_time>1371 274000000</sim_time>
-      <real_time>359 317724683</real_time>
-      <wall_time>1472711897 437503175</wall_time>
+      <sim_time>1406 731000000</sim_time>
+      <real_time>36 808778832</real_time>
+      <wall_time>1474191151 644979731</wall_time>
       <model name='Construction Cone'>
-        <pose>-1 -4 -1e-06 -4e-06 0 0</pose>
+        <pose>-1 -4 1e-06 1e-06 3e-06 -4.03897e-28</pose>
         <link name='link'>
-          <pose>-1 -4 -1e-06 -4e-06 0 0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
-      <model name='Construction Cone_0'>
-        <pose>2.51511 4 -7e-06 2e-06 2e-06 1.61559e-27</pose>
-        <link name='link'>
-          <pose>2.51511 4 -7e-06 2e-06 2e-06 1.61559e-27</pose>
+          <pose>-1 -4 1e-06 1e-06 3e-06 -4.03897e-28</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='Construction Cone_1'>
-        <pose>1 1 0 0 1e-06 0</pose>
+        <pose>1 1 -0 0 -0 0</pose>
         <link name='link'>
-          <pose>1 1 0 0 1e-06 0</pose>
+          <pose>1 1 -0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='Construction Cone_2'>
-        <pose>-4 1 -9e-06 0 -0 0</pose>
+        <pose>-4 1 -1e-06 -1e-06 -1e-06 0</pose>
         <link name='link'>
-          <pose>-4 1 -9e-06 0 -0 0</pose>
+          <pose>-4 1 -1e-06 -1e-06 -1e-06 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='coke_can'>
-        <pose>-3.82476 3.7412 1.19539 0.002286 0.005608 -0.267326</pose>
+        <pose>-3.82476 3.7412 1.1954 0.002821 0.00567 -0.267329</pose>
         <link name='link'>
-          <pose>-3.82476 3.7412 1.19539 0.002286 0.005608 -0.267326</pose>
+          <pose>-3.82476 3.7412 1.1954 0.002821 0.00567 -0.267329</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -443,15 +434,6 @@
         <pose>4 -4 0 0 -0 0</pose>
         <link name='link'>
           <pose>4 -4 0 0 -0 0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
-      <model name='fire_hydrant_1'>
-        <pose>4 4 0 0 -0 0</pose>
-        <link name='link'>
-          <pose>4 4 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -511,15 +493,6 @@
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-     <!--  <model name='grey_wall_6'>
-        <pose>0 0 2.8 1.56975 -0 0</pose>
-        <link name='link'>
-          <pose>0 0 2.8 1.56975 -0 0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model> -->
       <model name='ground_plane'>
         <pose>0 0 0 0 0 -1.5708</pose>
         <link name='link'>
@@ -595,7 +568,7 @@
     </state>
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose>-7.83093 -15.9037 35.41 -1.1907e-16 1.0858 1.66435</pose>
+        <pose>-3.13854 -0.147133 22.1608 -2.6e-05 1.5698 1.57231</pose>
         <view_controller>orbit</view_controller>
       </camera>
     </gui>
@@ -942,93 +915,6 @@
       </link>
       <pose>0 -4 0 0 -0 0</pose>
     </model>
-    <model name='fire_hydrant_1'>
-      <static>1</static>
-      <link name='link'>
-        <collision name='collision'>
-          <geometry>
-            <mesh>
-              <uri>model://fire_hydrant/meshes/fire_hydrant.dae</uri>
-            </mesh>
-          </geometry>
-          <max_contacts>10</max_contacts>
-          <surface>
-            <bounce/>
-            <friction>
-              <ode/>
-            </friction>
-            <contact>
-              <ode/>
-            </contact>
-          </surface>
-        </collision>
-        <visual name='visual'>
-          <geometry>
-            <mesh>
-              <uri>model://fire_hydrant/meshes/fire_hydrant.dae</uri>
-            </mesh>
-          </geometry>
-        </visual>
-        <velocity_decay>
-          <linear>0</linear>
-          <angular>0</angular>
-        </velocity_decay>
-        <self_collide>0</self_collide>
-        <kinematic>0</kinematic>
-        <gravity>1</gravity>
-      </link>
-      <pose>4 4 0 0 -0 0</pose>
-    </model>
-    <model name='Construction Cone_0'>
-      <link name='link'>
-        <collision name='collision'>
-          <geometry>
-            <mesh>
-              <scale>10 10 10</scale>
-              <uri>model://construction_cone/meshes/construction_cone.dae</uri>
-            </mesh>
-          </geometry>
-          <max_contacts>10</max_contacts>
-          <surface>
-            <bounce/>
-            <friction>
-              <ode/>
-            </friction>
-            <contact>
-              <ode/>
-            </contact>
-          </surface>
-        </collision>
-        <visual name='visual'>
-          <geometry>
-            <mesh>
-              <scale>10 10 10</scale>
-              <uri>model://construction_cone/meshes/construction_cone.dae</uri>
-            </mesh>
-          </geometry>
-        </visual>
-        <velocity_decay>
-          <linear>0</linear>
-          <angular>0</angular>
-        </velocity_decay>
-        <self_collide>0</self_collide>
-        <inertial>
-          <inertia>
-            <ixx>1</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>1</iyy>
-            <iyz>0</iyz>
-            <izz>1</izz>
-          </inertia>
-          <mass>1</mass>
-        </inertial>
-        <kinematic>0</kinematic>
-        <gravity>1</gravity>
-      </link>
-      <pose>2.51511 4 0 0 -0 0</pose>
-      <static>0</static>
-    </model>
     <model name='nist_0'>
       <static>1</static>
       <link name='nist_maze_wall_triple_holes_120_link'>
@@ -1249,51 +1135,5 @@
       </link>
       <pose>-1.47382 -1 0 0 -0 0</pose>
     </model>
-   <!--  <model name='grey_wall_6'>
-      <static>1</static>
-      <link name='link'>
-        <pose>0 0 2.8 1.56975 -0 0</pose>
-        <collision name='collision'>
-          <geometry>
-            <box>
-              <size>9 0.2 9</size>
-            </box>
-          </geometry>
-          <max_contacts>10</max_contacts>
-          <surface>
-            <bounce/>
-            <friction>
-              <ode/>
-            </friction>
-            <contact>
-              <ode/>
-            </contact>
-          </surface>
-        </collision>
-        <visual name='visual'>
-          <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>9 0.2 9</size>
-            </box>
-          </geometry>
-          <material>
-            <script>
-              <uri>model://grey_wall/materials/scripts</uri>
-              <uri>model://grey_wall/materials/textures</uri>
-              <name>vrc/grey_wall</name>
-            </script>
-          </material>
-        </visual>
-        <velocity_decay>
-          <linear>0</linear>
-          <angular>0</angular>
-        </velocity_decay>
-        <self_collide>0</self_collide>
-        <kinematic>0</kinematic>
-        <gravity>1</gravity>
-      </link>
-      <pose>0 0 2.8 1.56975 -0 0</pose>
-    </model> -->
   </world>
 </sdf>

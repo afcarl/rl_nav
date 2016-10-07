@@ -14,7 +14,7 @@ ptam_com::ptam_info Helper::ptamInfo;
 geometry_msgs::Pose Helper::robotWorldPose;
 pcl::PointCloud<pcl::PointXYZ> Helper::currentPointCloud;
 ros::ServiceClient Helper::posePointCloudClient;
-int Helper::MAP;
+int Helper::MAP, Helper::NUM_ACTIONS;
 bool Helper::up, Helper::down, Helper::left, Helper::right;
 Helper::Helper()
 {
@@ -24,9 +24,11 @@ Helper::Helper()
 	pointCloud_sub = nh.subscribe("/vslam/frame_points", 100, &Helper::pointCloudCb, this);
 	gazeboModelStates_sub = nh.subscribe("/gazebo/model_states", 100, &Helper::gazeboModelStatesCb, this);
 	MAP=-1;
+	NUM_ACTIONS = 14;
 	up = down = left = right = true;
 	ros::NodeHandle p_nh("~");
 	p_nh.getParam("map", MAP);
+	p_nh.getParam("num_actions", NUM_ACTIONS);
 }
 
 void Helper::poseCb(const geometry_msgs::PoseWithCovarianceStampedPtr posePtr)
@@ -124,14 +126,14 @@ bool Helper::inLimits(float x, float y)
 	if(MAP==1)
 		return x>0.4 and y > 0.4 and x < 7.6 and y < 7.6 and (x<3.6 or x>4.4 or (x>=3.6 and x<=4.4 and y>6.4)); // map 1
 	if(MAP==2)
-		return x>0.4 and y > 0.4 and x < 7.6 and y < 7.6 and (x<2.6 or y>5.4); // map 1
+		return x>0.4 and y > 0.4 and x < 7.6 and y < 7.6 and (x<2.6 or y>5.4); // map 2
 	if(MAP==3)
-		return x>0.4 and y > 0.4 and x < 7.6 and y < 7.6 and ((x<2.9 or x>5.1) and (y<3.1 or y>4.9)); // map 3
+		return x>0.4 and y > 0.4 and x < 7.6 and y < 7.6 and not ((x<2.9 or x>5.1) and (y>3.1 and y<4.9)); // map 3
 	if(MAP==4)
-		return x>-3.6 and y > -3.6 and x < 4.1 and y < 4.1 and (x<-1.1 or x>-1.1 or ((x>=-1.1 or x<=-1.1 and y>1.9) and (x>=1.1 or x<=1.1 and y<-1.9))) and not(x<-3 and y>3); // map 4
+		return x>-3.6 and y > -3.6 and x < 4.1 and y < 4.1 and (x<-1.9 or x>-1.1 or (x>=-1.9 and x<=-1.1 and y>1.9)) and (x<1.1 or x>1.9 or (x>=1.1 and x<=1.9 and y<-1.9)) and not(x<-3 and y>3); // map 4
 	if(MAP==5)
 		return x>1.2 and y > 0.4 and x < 10.5 and y < 7.6 and (x<3.6 or x>5.4 or (x>=3.6 and x<=5.4 and y>6.4)) and !(x > 7 and x<9 and y>3 and y<5); // rooms
-	if(MAP==-1)
+	if(MAP==0)
 		return x>=-6 and x<=0 and y>=-1 and y<=3; //training map
 	return true;
 }
@@ -148,7 +150,7 @@ bool Helper::collisionFree(float xi, float xf, float yi, float yf, float angle, 
 
 vector<vector<float> > Helper::getTrajectories()
 {
-	float angle = PI/90.0, num_angles = 14, x, y;
+	float angle = PI/90.0, num_angles = NUM_ACTIONS, x, y;
 	vector<vector<float> > inputs;
 	vector<double> orientation = getPoseOrientation(robotWorldPose.orientation);
 	
@@ -186,6 +188,7 @@ vector<vector<float> > Helper::getTrajectories()
 				inputs.push_back(inp);
 		}
 	}
+	cout<<"NUM TRAJS: "<<inputs.size()<<endl;
 	return inputs;
 }
 

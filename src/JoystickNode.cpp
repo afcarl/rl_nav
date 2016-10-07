@@ -136,7 +136,8 @@ JoystickNode::JoystickNode()
 	p_nh.getParam("init_Y", initYaw);
 	p_nh.getParam("map", MAP);
 	p_nh.getParam("vel_scale", vel_scale);
-	
+	p_nh.getParam("predictor", PREDICTOR);
+	cout<<"PREDICTOR "<<PREDICTOR<<endl;
 	initState.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, initYaw);
 	learner.clear();
 	if(!MODE.compare("TRAIN") or !MODE.compare("TEST"))
@@ -162,6 +163,7 @@ JoystickNode::~JoystickNode()
 	p_nh.deleteParam("init_Y");
 	p_nh.deleteParam("map");
 	p_nh.deleteParam("vel_scale");
+	p_nh.deleteParam("predictor");
 
 	ofstream ratioFile("ratioFile.txt");
 	ratioFile << ((rlRatio==90)?10:rlRatio) << " " << num_episodes << endl;
@@ -179,6 +181,12 @@ void JoystickNode::ptamStartedCb(const std_msgs::EmptyPtr emptyPtr)
  */
 void JoystickNode::initCb(const std_msgs::EmptyPtr emptyPtr)
 {
+
+planner_reset_pub.publish(std_msgs::Empty());//stop planner
+gazebo_path.points.clear();
+vslam_path.points.clear();
+initY = 0;
+
 	if(!MODE.compare("TRAIN"))
 	{
 		initState.pose.position.x = -rand()%5 - 1;
@@ -187,10 +195,7 @@ void JoystickNode::initCb(const std_msgs::EmptyPtr emptyPtr)
 	}
 	std_msgs::String resetString, spaceString;
 	geometry_msgs::Twist twist;
-	initY = 0;
-	planner_reset_pub.publish(std_msgs::Empty());//stop planner
-	gazebo_path.points.clear();
-	vslam_path.points.clear();
+	
 	resetString.data = "r";
 	spaceString.data = "Space";
 	ptam_com_pub.publish(resetString);
@@ -271,15 +276,32 @@ void JoystickNode::poseCb(const geometry_msgs::PoseWithCovarianceStampedPtr pose
 	ptam_pose_pub.publish(ps);
 
 	ps.pose.position.z = 0;
-	ps.pose.position.y = -pose.pose.pose.position.x;// + startPTAMPose.position.z + startRobotPose.position.y;
-	ps.pose.position.x = -pose.pose.pose.position.z;// - startPTAMPose.position.x + startRobotPose.position.x;
-	vector<double> curr_angles = Helper::getPoseOrientation(pose.pose.pose.orientation);
-	/*vector<double> ptam_init_angles = Helper::getPoseOrientation(startPTAMPose.orientation);
-	vector<double> robot_init_angles = Helper::getPoseOrientation(startRobotPose.orientation);*/
-	if(curr_angles[2]*curr_angles[2] < (PI - fabs(curr_angles[2]))*(PI - fabs(curr_angles[2])))
-		ps.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, curr_angles[1]);// - ptam_init_angles[1]+robot_init_angles[2]);
-	else
-		ps.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, - curr_angles[1]);// - ptam_init_angles[1]+robot_init_angles[2]);
+	//if(MAP==1 or MAP==5)
+	if(MAP==2 or MAP==3 or MAP==4 or MAP==-1)
+	{
+		ps.pose.position.x = pose.pose.pose.position.x;// + startPTAMPose.position.z + startRobotPose.position.y;
+		ps.pose.position.y = -pose.pose.pose.position.z;// - startPTAMPose.position.x + startRobotPose.position.x;
+		vector<double> curr_angles = Helper::getPoseOrientation(pose.pose.pose.orientation);
+		/*vector<double> ptam_init_angles = Helper::getPoseOrientation(startPTAMPose.orientation);
+		vector<double> robot_init_angles = Helper::getPoseOrientation(startRobotPose.orientation);*/
+		if(curr_angles[2]*curr_angles[2] < (PI - fabs(curr_angles[2]))*(PI - fabs(curr_angles[2])))
+			ps.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, PI/2 +  curr_angles[1]);// - ptam_init_angles[1]+robot_init_angles[2]);
+		else
+			ps.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, -PI/2 - curr_angles[1]);// - ptam_init_angles[1]+robot_init_angles[2]);
+	}
+	else //if(MAP==2 or MAP==3 or MAP==4)
+	{
+		ps.pose.position.y = -pose.pose.pose.position.x;// + startPTAMPose.position.z + startRobotPose.position.y;
+		ps.pose.position.x = -pose.pose.pose.position.z;// - startPTAMPose.position.x + startRobotPose.position.x;
+		vector<double> curr_angles = Helper::getPoseOrientation(pose.pose.pose.orientation);
+		/*vector<double> ptam_init_angles = Helper::getPoseOrientation(startPTAMPose.orientation);
+		vector<double> robot_init_angles = Helper::getPoseOrientation(startRobotPose.orientation);*/
+		if(curr_angles[2]*curr_angles[2] < (PI - fabs(curr_angles[2]))*(PI - fabs(curr_angles[2])))
+			ps.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, curr_angles[1]);// - ptam_init_angles[1]+robot_init_angles[2]);
+		else
+			ps.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, -PI/2 + curr_angles[1]);// - ptam_init_angles[1]+robot_init_angles[2]);
+	}
+
 	pose_pub.publish(ps);
 	//cout<<curr_angles[0]*180/PI<<" "<<curr_angles[1]*180/PI<<" "<<curr_angles[2]*180/PI<<endl;
 
@@ -313,16 +335,17 @@ void JoystickNode::globalNextPoseCb(const std_msgs::Float32MultiArrayPtr arrayPt
 	
 	CommandStateActionQ step = learner.getAction(input);
 	float Q = get<2>(step);
+	
 	vector<int> stateAction = get<1>(step);
-	geometry_msgs::PoseStamped ps;
+	/*geometry_msgs::PoseStamped ps;
 	ps = Helper::getPoseFromInput(input, pose);
-	expected_pub.publish(ps);
+	expected_pub.publish(ps);*/
 	ptam_com::ptam_info info;
 		
 	pthread_mutex_lock(&ptamInfo_mutex);
 	info = ptamInfo;
 	pthread_mutex_unlock(&ptamInfo_mutex);
-	vector<float> goal;
+	/*vector<float> goal;
 	if(MAP==1)
 		goal = {6,2};
 	else if(MAP==4)
@@ -333,7 +356,7 @@ void JoystickNode::globalNextPoseCb(const std_msgs::Float32MultiArrayPtr arrayPt
 			goal = {0,0};
 		else 
 			goal = {3.5,3.5};
-	}
+	}*/
 	state = 1;
 	//if((robotWorldPose.position.x - goal[0])*(robotWorldPose.position.x - goal[0]) + (robotWorldPose.position.y - goal[1])*(robotWorldPose.position.y - goal[1]) <= 0.25
 	//if(num_broken>3 or !info.trackingQuality)
@@ -342,10 +365,15 @@ void JoystickNode::globalNextPoseCb(const std_msgs::Float32MultiArrayPtr arrayPt
 		planner_reset_pub.publish(std_msgs::Empty());//stop planner
 		cout<<"UH OH!!!"<<endl;
 	}
-	//else if(!MODE.compare("MAP") and learner.predict(stateAction))
-	/*else if(!MODE.compare("MAP") and Q < Q_THRESH)
+	bool possible_break = false;
+	if(!PREDICTOR.compare("RL"))
+		possible_break = (Q < Q_THRESH);
+	else if(!PREDICTOR.compare("SVM"))
+		possible_break = learner.predict(stateAction);
+
+	if(!MODE.compare("MAP") and possible_break)
 	{
-		cout<<"predicted break "<< prevQ<<endl;
+		cout<<"predicted break "<< Q<<endl;
 		for(auto i: get<1>(step))
 			cout<<i<<'\t'; 
 		cout<<endl;
@@ -353,8 +381,7 @@ void JoystickNode::globalNextPoseCb(const std_msgs::Float32MultiArrayPtr arrayPt
 		planner_reset_pub.publish(std_msgs::Empty());//stop planner
 		learner.clear();
 		sendCommand_pub.publish(std_msgs::Empty());
-	}*/
-	/*else cout<<"Q VALUE: "<<Q<<endl;*/
+	}
 	
 	pthread_mutex_unlock(&globalPlanner_mutex);
 }
@@ -505,20 +532,12 @@ void JoystickNode::plannerStatusCb(const std_msgs::StringPtr plannerStatusPtr)
 			lastRLInput.push_back((num_broken <= 3 and info.trackingQuality)?0:1);
 			for(auto i: lastRLInput)
 				qFile<<i<<'\t';
-			/*qFile<<';';
-			for(auto input : Helper::getTrajectories())
-			{
-				vector<int> rlInput;
-				float Q;
-				tie(ignore, rlInput, Q) = learner.getAction(input);
-				for(auto i : rlInput)
-					qFile<<i<<'\t';
-				qFile<<';';
-			}*/
+			
 			qFile << '\n';
 			//episode.push_back(lastRLInput);
 		//}
-		//learner.updateQ(lastRLInput,get<1>(learner.getBestQStateAction(lastCommand)));
+		if(!MODE.compare("TRAIN"))
+			learner.updateQ(lastRLInput,get<1>(learner.getBestQStateAction(lastCommand)));
 		if(num_broken>3 or !info.trackingQuality) 
 		{	
 			cout<<"Breaking after "<<breakCount<< " steps due to action with Q value "<< prevQ<<'\t';
@@ -570,7 +589,10 @@ void JoystickNode::plannerStatusCb(const std_msgs::StringPtr plannerStatusPtr)
 				global_planner_pub.publish(std_msgs::Empty());
 			}
 			else
+			{
+				cout<<"sending command"<<endl;
 				sendCommand_pub.publish(std_msgs::Empty());
+			}
 			
 		}
 	}
@@ -621,18 +643,20 @@ void JoystickNode::sendCommandCb(std_msgs::EmptyPtr emptyPtr)
 			tie(lastCommand, lastRLInput, prevQ) = learner.getEpsilonGreedyStateAction(rlRatio,lastCommand);
 		else if(!MODE.compare("TEST"))
 			tie(lastCommand, lastRLInput, prevQ) = learner.getEpsilonGreedyStateAction(95,lastCommand);
-		else if(!MODE.compare("MAP"))
+		else //if(!MODE.compare("MAP"))
 		{
-/*			rl_nav::ExpectedPath expectedPath;
+			rl_nav::ExpectedPath expectedPath;
 			expectedPathClient.call(expectedPath);
 			vector<float> poses = expectedPath.response.expectedPath.data;
 			float nextAngle = atan(poses[5]);
-*/			//float nextAngle = atan2 (waypointPose.position.y + pose.pose.pose.position.x, waypointPose.position.x + pose.pose.pose.position.z);
+//			float nextAngle = atan2 (waypointPose.position.y + pose.pose.pose.position.x, waypointPose.position.x + pose.pose.pose.position.z);
 			//float nextAngle = atan2 (waypointPose.position.y + robotWorldPose.position.x, waypointPose.position.x + robotWorldPose.position.z);
-			float nextAngle = Helper::getPoseOrientation(waypointPose.orientation)[2];
+			//float nextAngle = Helper::getPoseOrientation(waypointPose.orientation)[2];
 
-			tie(lastCommand, lastRLInput, prevQ) = learner.getThresholdedClosestAngleStateAction(Q_THRESH, nextAngle, lastCommand);
-			//tie(lastCommand, lastRLInput, prevQ) = learner.getSLClosestAngleStateAction(nextAngle);
+			if(!PREDICTOR.compare("RL"))
+				tie(lastCommand, lastRLInput, prevQ) = learner.getThresholdedClosestAngleStateAction(Q_THRESH, nextAngle, lastCommand);
+			else if(!PREDICTOR.compare("SVM"))
+				tie(lastCommand, lastRLInput, prevQ) = learner.getSLClosestAngleStateAction(nextAngle);
 		}	
 		num_steps++;
 		//next_pose_pub.publish(Helper::getPoseFromInput(lastCommand, pose));

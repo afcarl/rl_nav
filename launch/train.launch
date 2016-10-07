@@ -8,6 +8,7 @@
 	<node name="PlannerNode" pkg="rl_nav" type="PlannerNode.py" output="screen" respawn="true"/>
 
 	<node name="rl_nav" pkg="rl_nav" type="rl_nav" output="screen" respawn="true">
+		<param name="predictor" type="string" value="RL" />
 		<param name="qThresh" type="double" value="-0.2" />	
 		<param name="vel_scale" type="double" value="1.0" />	
 		<param name="mode" type="string" value="TRAIN" />

@@ -91,7 +91,7 @@ private:
 
 	tf::TransformBroadcaster tfBroadcaster;
 		
-	string MODE;
+	string MODE, PREDICTOR;
 	int MAX_EPISODES, MAX_STEPS, MAP;
 	float Q_THRESH;
 	int state, breakCount, num_broken, num_steps, num_episodes;

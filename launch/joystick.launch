@@ -6,12 +6,17 @@
   </node>
 
 	<node name="PlannerNode" pkg="rl_nav" type="PlannerNode.py" output="screen" required="true">
-		<param name="map" type="int" value="1" />
+		<param name="map" type="int" value="3" />
+		<!-- <remap from="/cmd_vel_mux/input/teleop" to="/cmd_vel" /> -->
 	</node>
 
 	<node name="rl_nav" pkg="rl_nav" type="rl_nav" output="screen" required="true">
-		<param name="qThresh" type="double" value="-10" />	
-		<param name="vel_scale" type="double" value="1.0" />	
+		<param name="predictor" type="string" value="RL" />
+		<param name="qThresh" type="double" value="-0.2" />	
+		<param name="vel_scale" type="double" value="0.5" />	
+		<param name="num_actions" type="int" value="14" />
+		
+		<!-- <remap from="/cmd_vel_mux/input/teleop" to="/cmd_vel" /> -->
 		<!-- map 1 -->
 		<!-- <param name="mode" type="string" value="MAP" />	
 		<param name="init_x" type="double" value="2.6" />
@@ -28,19 +33,19 @@
 		<param name="map" type="int" value="2" /> -->
 
 		<!-- map 3 -->
-		<!-- <param name="mode" type="string" value="MAP" />
+		<param name="mode" type="string" value="MAP" />
 		<param name="init_x" type="double" value="2" />
 		<param name="init_y" type="double" value="2" />
-		<param name="init_Y" type="double" value="0" />
-		<param name="map" type="int" value="3" /> -->
+		<param name="init_Y" type="double" value="-0.7" />
+		<param name="map" type="int" value="3" />
 
 		<!-- corridor map -->
-		<!-- <param name="mode" type="string" value="MAP" />
+<!-- 		<param name="mode" type="string" value="MAP" />
 		<param name="init_x" type="double" value="-3" />
 		<param name="init_y" type="double" value="-1.81" />
 		<param name="init_Y" type="double" value="1.282365" />
-		<param name="map" type="int" value="4" /> -->
-
+		<param name="map" type="int" value="4" />
+ -->
 		<!-- training map -->
 		<!-- <param name="init_x" type="double" value="-1" />
 		<param name="init_y" type="double" value="1" />
@@ -49,12 +54,12 @@
 		 -->
 
 		 <!-- rooms map -->
-		<param name="mode" type="string" value="MAP" />	
+<!-- 		<param name="mode" type="string" value="MAP" />	
 		<param name="init_x" type="double" value="2.6" />
 		<param name="init_y" type="double" value="2.6" />
 		<param name="init_Y" type="double" value="1.0472" /> 
 		<param name="map" type="int" value="5" />
-
+ -->
 
 	</node>
 

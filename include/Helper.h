@@ -64,7 +64,7 @@ class Helper
 	ros::NodeHandle nh;
 	ros::Subscriber pose_sub, info_sub, gazeboModelStates_sub, pointCloud_sub;
 	static ros::ServiceClient posePointCloudClient;
-	static int MAP;
+	static int MAP, NUM_ACTIONS;
 
 	void poseCb(const geometry_msgs::PoseWithCovarianceStampedPtr posePtr);
 	void ptamInfoCb(const ptam_com::ptam_infoPtr ptamInfoPtr);	

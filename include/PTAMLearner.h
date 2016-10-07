@@ -19,15 +19,16 @@ class PTAMLearner : public SarsaLearner, public SupervisedLearner
 {
 private:
 	ros::NodeHandle nh;
-	ros::Subscriber gazeboModelStates_sub, pointCloud_sub;
-	static pthread_mutex_t gazeboModelState_mutex, pointCloud_mutex;
+	ros::Subscriber gazeboModelStates_sub, pointCloud_sub, pixelCloud_sub;
+	static pthread_mutex_t gazeboModelState_mutex, pointCloud_mutex, pixelCloud_mutex;
 
 	geometry_msgs::Pose robotWorldPose;
-	pcl::PointCloud<pcl::PointXYZ> currentPointCloud;
+	pcl::PointCloud<pcl::PointXYZ> currentPointCloud, currentPixelCloud;
 	vector<CommandStateActionQ> possibleTrajectories;
 	CommandStateActionQ lastBestQStateAction;
 	void gazeboModelStatesCb(const gazebo_msgs::ModelStatesPtr modelStatesPtr);
-	void pointCloudCb(const pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloudPtr);	
+	void pointCloudCb(const pcl::PointCloud<pcl::PointXYZ>::Ptr pointCloudPtr);
+	void pixelCloudCb(const pcl::PointCloud<pcl::PointXYZ>::Ptr pixelCloudPtr);
 
 public:	
 	PTAMLearner();
