@@ -436,7 +436,7 @@ void JoystickNode::joyCb(const sensor_msgs::JoyPtr joyPtr)
 		spaceString.data = "Space";
 		ptam_com_pub.publish(spaceString);
 	}
-	else if(joyPtr->buttons[START] and !joy.buttons[START])
+	if(joyPtr->buttons[START] and !joy.buttons[START])
 		init_pub.publish(std_msgs::Empty());
 	else if(joyPtr->buttons[BACK] and !joy.buttons[BACK])
 		ros::shutdown();

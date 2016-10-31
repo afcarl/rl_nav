@@ -243,17 +243,17 @@ class PLanner2D(object):
 			return 1
 
 	def receiveInputGlobal(self, empty):
-		# pose = [self.robotPTAMPose.position.x, self.robotPTAMPose.position.y, 
-		# 		tan(euler_from_quaternion([ self.robotPTAMPose.orientation.x,
-		# 								self.robotPTAMPose.orientation.y,
-		# 								self.robotPTAMPose.orientation.z,
-		# 								self.robotPTAMPose.orientation.w])[2]),0]
+		pose = [self.robotPTAMPose.position.x, self.robotPTAMPose.position.y, 
+				tan(euler_from_quaternion([ self.robotPTAMPose.orientation.x,
+										self.robotPTAMPose.orientation.y,
+										self.robotPTAMPose.orientation.z,
+										self.robotPTAMPose.orientation.w])[2]),0]
 
-		pose = [self.robotState.position.x, self.robotState.position.y, 
-				tan(euler_from_quaternion([ self.robotState.orientation.x,
-										self.robotState.orientation.y,
-										self.robotState.orientation.z,
-										self.robotState.orientation.w])[2]),0]
+		# pose = [self.robotState.position.x, self.robotState.position.y, 
+		# 		tan(euler_from_quaternion([ self.robotState.orientation.x,
+		# 								self.robotState.orientation.y,
+		# 								self.robotState.orientation.z,
+		# 								self.robotState.orientation.w])[2]),0]
 
 		# distance = linalg.norm(array([self.robotPTAMPose.position.x, self.robotPTAMPose.position.y]) 
 		# 					  - array([self.points[0], self.points[1]]))
