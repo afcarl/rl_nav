@@ -277,19 +277,7 @@ void JoystickNode::poseCb(const geometry_msgs::PoseWithCovarianceStampedPtr pose
 
 	ps.pose.position.z = 0;
 	//if(MAP==1 or MAP==5)
-	if(MAP==2 or MAP==3 or MAP==4 or MAP==-1)
-	{
-		ps.pose.position.x = pose.pose.pose.position.x;// + startPTAMPose.position.z + startRobotPose.position.y;
-		ps.pose.position.y = -pose.pose.pose.position.z;// - startPTAMPose.position.x + startRobotPose.position.x;
-		vector<double> curr_angles = Helper::getPoseOrientation(pose.pose.pose.orientation);
-		/*vector<double> ptam_init_angles = Helper::getPoseOrientation(startPTAMPose.orientation);
-		vector<double> robot_init_angles = Helper::getPoseOrientation(startRobotPose.orientation);*/
-		if(curr_angles[2]*curr_angles[2] < (PI - fabs(curr_angles[2]))*(PI - fabs(curr_angles[2])))
-			ps.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, PI/2 +  curr_angles[1]);// - ptam_init_angles[1]+robot_init_angles[2]);
-		else
-			ps.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, -PI/2 - curr_angles[1]);// - ptam_init_angles[1]+robot_init_angles[2]);
-	}
-	else //if(MAP==2 or MAP==3 or MAP==4)
+	if(MAP==2 or MAP==3 or MAP==4 or MAP==-1 or MAP==1)
 	{
 		ps.pose.position.y = -pose.pose.pose.position.x;// + startPTAMPose.position.z + startRobotPose.position.y;
 		ps.pose.position.x = -pose.pose.pose.position.z;// - startPTAMPose.position.x + startRobotPose.position.x;
@@ -300,6 +288,21 @@ void JoystickNode::poseCb(const geometry_msgs::PoseWithCovarianceStampedPtr pose
 			ps.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, curr_angles[1]);// - ptam_init_angles[1]+robot_init_angles[2]);
 		else
 			ps.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, -PI/2 + curr_angles[1]);// - ptam_init_angles[1]+robot_init_angles[2]);
+	
+		}
+	else //if(MAP==2 or MAP==3 or MAP==4)
+	{
+		
+		ps.pose.position.x = pose.pose.pose.position.x;// + startPTAMPose.position.z + startRobotPose.position.y;
+		ps.pose.position.y = -pose.pose.pose.position.z;// - startPTAMPose.position.x + startRobotPose.position.x;
+		vector<double> curr_angles = Helper::getPoseOrientation(pose.pose.pose.orientation);
+		/*vector<double> ptam_init_angles = Helper::getPoseOrientation(startPTAMPose.orientation);
+		vector<double> robot_init_angles = Helper::getPoseOrientation(startRobotPose.orientation);*/
+		if(curr_angles[2]*curr_angles[2] < (PI - fabs(curr_angles[2]))*(PI - fabs(curr_angles[2])))
+			ps.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, PI/2 +  curr_angles[1]);// - ptam_init_angles[1]+robot_init_angles[2]);
+		else
+			ps.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, -PI/2 - curr_angles[1]);// - ptam_init_angles[1]+robot_init_angles[2]);
+	
 	}
 
 	pose_pub.publish(ps);

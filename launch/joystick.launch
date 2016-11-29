@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <launch>
     <!-- joy node -->
   <node respawn="true" pkg="joy" type="joy_node" name="joy" output="screen">    
@@ -40,12 +41,12 @@
 		<param name="map" type="int" value="3" /> -->
 
 		<!-- corridor map -->
-<!-- 		<param name="mode" type="string" value="MAP" />
+		<!-- <param name="mode" type="string" value="MAP" />
 		<param name="init_x" type="double" value="-3" />
 		<param name="init_y" type="double" value="-1.81" />
 		<param name="init_Y" type="double" value="1.282365" />
-		<param name="map" type="int" value="4" />
- -->
+		<param name="map" type="int" value="4" /> -->
+
 		<!-- training map -->
 		<!-- <param name="init_x" type="double" value="-1" />
 		<param name="init_y" type="double" value="1" />
